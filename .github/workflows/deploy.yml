@@ -1,0 +1,27 @@
+name: Deploy to S3
+
+on:
+  push:
+    branches: [ "main" ]   # deploy whenever you push to main branch
+  workflow_dispatch:       # allow manual trigger
+
+permissions:
+  id-token: write   # needed for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<YOUR_ACCOUNT_ID>:role/GitHubActionsDeployS3
+          aws-region: ap-south-1   # replace with your region (e.g., us-east-1)
+
+      - name: Sync website to S3
+        run: |
+          aws s3 sync ./src s3://my-portfolio-site-123 --delete
